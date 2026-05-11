@@ -600,11 +600,13 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   hero.appendChild(hsLayer);
 
   /* ── Resize renderer ── */
+  const HFOV = 90; // 锁定水平视角，所有屏幕横向内容一致
   function resizeRenderer() {
     const W = hero.offsetWidth, H = hero.offsetHeight;
     if(!W || !H) return;
     renderer.setSize(W, H);
     camera.aspect = W / H;
+    camera.fov = 2 * Math.atan(Math.tan(HFOV * Math.PI / 360) / camera.aspect) * 180 / Math.PI;
     camera.updateProjectionMatrix();
   }
   resizeRenderer();
