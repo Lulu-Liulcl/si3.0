@@ -223,6 +223,36 @@ footer{background:#f2f2f0;padding:36px 48px;display:flex;align-items:center;just
 .zc-leg-row{display:flex;align-items:center;gap:8px;font-size:11px;color:#555}
 .zc-leg-sw{width:22px;height:9px;border-radius:2px;flex-shrink:0}
 .zc-leg-sym{width:36px;height:12px;flex-shrink:0;display:flex;align-items:center}
+
+/* ── RESPONSIVE ── */
+/* nav padding: scales from 24px on mobile to 360px only at 1920px+ */
+@media (max-width: 1800px) { .nav-inner { padding: 0 clamp(24px, 8vw, 280px); } }
+@media (max-width: 1400px) { .nav-inner { padding: 0 clamp(24px, 4vw, 120px); } }
+
+/* container: add side padding so content breathes on all viewport widths */
+.container, .container-wide {
+  padding-left: clamp(20px, 5vw, 60px);
+  padding-right: clamp(20px, 5vw, 60px);
+}
+
+/* scale down vertical spacing on wide monitors */
+@media (min-width: 1600px) {
+  .fp-section { padding: 100px 0; }
+  .stds-intro { padding: 100px 0 60px; }
+  .std-sec { padding: 80px 0; }
+  .overview-section { padding: 60px 0 90px; }
+  .fl-section { padding: 60px 0 90px; }
+  .gallery-section { padding: 60px 0 90px; }
+}
+
+/* two-column grids: stack on narrow viewports */
+@media (max-width: 960px) {
+  .overview-grid { grid-template-columns: 1fr; gap: 36px; }
+  .fl-grid { grid-template-columns: 1fr; gap: 36px; }
+  .std-inner { grid-template-columns: 1fr; gap: 40px; }
+  .std-inner.rev .std-vis { order: 0; }
+  .std-inner.rev .std-text { order: 0; }
+}
 </style>
 </head>
 <body>
@@ -402,7 +432,7 @@ footer{background:#f2f2f0;padding:36px 48px;display:flex;align-items:center;just
         <div class="fp-wrap">
           <img src="图片素材/20260428-173743.jpeg" alt="空间构成平面图" style="display:block;width:100%;height:auto;border-radius:18px">
           <!-- 零售区域 可点击层 -->
-          <div class="fp-zone-hit" id="hotspot-retail" style="left:14%;top:10%;width:25%;height:80%"></div>
+          <div class="fp-zone-hit" id="hotspot-retail" style="left:8.5%;top:7%;width:31%;height:86%"></div>
         </div>
         <p style="text-align:center;font-size:12px;color:#bbb;margin-top:14px;letter-spacing:.03em">点击颜色区域查看设计细则</p>
       </div>
