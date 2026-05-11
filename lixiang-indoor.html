@@ -79,8 +79,8 @@ body.exit{opacity:0;transform:translateY(-8px);pointer-events:none}
 .hero-hotspot:hover .hero-hotspot-ring{border-color:#fff;background:rgba(255,255,255,.12)}
 @keyframes hsPulse{0%{transform:translate(-50%,-50%) scale(.8);opacity:.9}70%{transform:translate(-50%,-50%) scale(1.6);opacity:0}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
 /* ── SCENE OVERLAY ── */
-.hero-scene-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:6}
-.hero-scene-overlay.active{opacity:1;pointer-events:auto}
+.hero-scene-overlay{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .35s ease;z-index:6}
+.hero-scene-overlay.active{opacity:1}
 /* ── SCENE INDICATOR ── */
 .hero-scene-nav{position:absolute;bottom:88px;left:50%;transform:translateX(-50%);z-index:3;display:flex;align-items:center;gap:10px;pointer-events:none}
 .hero-scene-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.35);transition:background .3s,transform .3s}
@@ -111,6 +111,18 @@ body.exit{opacity:0;transform:translateY(-8px);pointer-events:none}
 .hero-scroll{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.22);font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;display:flex;flex-direction:column;align-items:center;gap:10px;animation:heroScroll 2.8s infinite}
 .hero-scroll::after{content:'';width:1px;height:44px;background:rgba(255,255,255,.18)}
 @keyframes heroScroll{0%,100%{opacity:.35;transform:translateX(-50%) translateY(0)}50%{opacity:.75;transform:translateX(-50%) translateY(10px)}}
+
+/* ── 360° TOUR ENHANCEMENTS ── */
+/* loading spinner */
+.hero-loading{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .3s}
+.hero-loading.active{opacity:1}
+.hero-loading-inner{text-align:center}
+.hero-loading-spinner{width:36px;height:36px;border:2px solid rgba(255,255,255,.15);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hero-loading-text{font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.1em;text-transform:uppercase}
+.hero-loading-bar{width:80px;height:2px;background:rgba(255,255,255,.12);border-radius:2px;margin:10px auto 0;overflow:hidden}
+.hero-loading-bar-fill{height:100%;width:0%;background:#fff;border-radius:2px;transition:width .15s}
+/* scene name badge */
 
 /* ── LAYOUT ── */
 .container{max-width:1200px;margin:0 auto;padding:0}
@@ -356,6 +368,14 @@ footer{background:#f2f2f0;padding:36px 48px;display:flex;align-items:center;just
     <!-- hotspots injected by JS -->
   </div>
   <div class="hero-scene-overlay" id="heroSceneOverlay"></div>
+  <!-- Loading indicator -->
+  <div class="hero-loading" id="heroLoading">
+    <div class="hero-loading-inner">
+      <div class="hero-loading-spinner"></div>
+      <div class="hero-loading-text">加载中</div>
+      <div class="hero-loading-bar"><div class="hero-loading-bar-fill" id="heroLoadingBar"></div></div>
+    </div>
+  </div>
   <div class="hero-pan-hint" id="heroPanHint">
     <span class="hero-pan-text">拖拽探索 360° 空间</span>
     <div class="hero-pan-arrows">
@@ -535,24 +555,21 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   if(!hero) return;
 
   /* ── Scene definitions ── */
-  /* lon: horizontal angle -180~180 (0=front, 90=right)  lat: vertical angle -85~85 (0=horizon) */
   const SCENES = [
     {
       src: '图片素材/全景图.jpeg',
       name: '展厅总览',
       fov: 60, initLon: 270, initLat: 0, offset: 0,
-      hotspots: [
-
-      ]
+      hotspots: []
     },
     {
       src: '图片素材/效果总览图片/家庭区1.jpeg',
       name: '家庭区 1',
       fov: 90, initLon: 0, initLat: 0,
       hotspots: [
-        { lon: 0,    lat: 0, label: '洽谈区',   to: 2 },
-        { lon: 60,   lat: 0, label: '儿童区',   to: 3 },
-        { lon: -120, lat: 0, label: '展厅',     to: 0 }
+        { lon: 0,    lat: 0, label: '家庭区 2',   to: 2 },
+        { lon: 60,   lat: 0, label: '儿童区',     to: 3 },
+        { lon: -120, lat: 0, label: '展厅总览',   to: 0 }
       ]
     },
     {
@@ -560,8 +577,8 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       name: '家庭区 2',
       fov: 90, initLon: 0, initLat: 0,
       hotspots: [
-        { lon: 0,   lat: 0, label: '家庭区', to: 1 },
-        { lon: 120, lat: 0, label: '展厅',   to: 0 }
+        { lon: 0,   lat: 0, label: '家庭区 1', to: 1 },
+        { lon: 120, lat: 0, label: '展厅总览', to: 0 }
       ]
     },
     {
@@ -569,7 +586,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       name: '儿童区',
       fov: 90, initLon: 0, initLat: 0,
       hotspots: [
-        { lon: 0, lat: 0, label: '返回家庭区', to: 1 }
+        { lon: 0, lat: 0, label: '家庭区 1', to: 1 }
       ]
     }
   ];
@@ -587,7 +604,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   const camera = new THREE.PerspectiveCamera(75, 2, 0.1, 1000);
   camera.target = new THREE.Vector3();
 
-  /* ── Sphere (inside-out for equirectangular) ── */
+  /* ── Sphere ── */
   const geo = new THREE.SphereGeometry(500, 60, 40);
   geo.scale(-1, 1, 1);
   const mat = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide });
@@ -599,8 +616,8 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   hsLayer.style.cssText = 'position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;';
   hero.appendChild(hsLayer);
 
-  /* ── Resize renderer ── */
-  const HFOV = 90; // 锁定水平视角，所有屏幕横向内容一致
+  /* ── Resize ── */
+  const HFOV = 90;
   function resizeRenderer() {
     const W = hero.offsetWidth, H = hero.offsetHeight;
     if(!W || !H) return;
@@ -615,7 +632,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   /* ── State ── */
   let lon = 0, lat = 5, targetLon = 0, targetLat = 5;
   let dragging = false, startX = 0, startY = 0, startLon = 0, startLat = 0, didDrag = false;
-  let activeSc = null, hsEls = [];
+  let activeSc = null, hsEls = [], currentIdx = 0;
 
   /* ── Texture cache ── */
   const texCache = {};
@@ -642,10 +659,53 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   }
 
 
+
+  /* ── Loading indicator ── */
+  let loadProgress = 0;
+  function showLoading(val) {
+    loadProgress = val || 0;
+    loadingBar.style.width = Math.min(100, loadProgress) + '%';
+    if(loadProgress < 100) {
+      loading.classList.add('active');
+    } else {
+      setTimeout(() => loading.classList.remove('active'), 250);
+    }
+  }
+
+  /* ── Simulate loading progress ── */
+  let progInterval = null;
+  function startProgress() {
+    clearInterval(progInterval);
+    loadProgress = 0;
+    showLoading(5);
+    progInterval = setInterval(() => {
+      if(loadProgress < 85) {
+        loadProgress += Math.random() * 12;
+        showLoading(loadProgress);
+      }
+    }, 200);
+  }
+  function finishProgress() {
+    clearInterval(progInterval);
+    showLoading(100);
+  }
+
+  /* ── Scene loading ── */
   function loadScene(idx) {
     const sc = SCENES[idx];
-    if(!sc) return;
-    overlay.classList.add('active');
+    if(!sc || idx === currentIdx && activeSc) return;
+
+    // Short fade for same-scene re-entry
+    if(activeSc) {
+      overlay.style.opacity = '1';
+    } else {
+      overlay.classList.add('active');
+    }
+
+    currentIdx = idx;
+    startProgress();
+    showSceneName(sc.name);
+    updateThumbnails();
 
     function apply(tex) {
       tex.wrapS = THREE.RepeatWrapping;
@@ -657,24 +717,43 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       targetLon = sc.initLon || 0;
       targetLat = sc.initLat || 0;
       buildHotspots(sc);
-      requestAnimationFrame(() => overlay.classList.remove('active'));
+      finishProgress();
+      // Fade in
+      requestAnimationFrame(() => { overlay.style.opacity = ''; overlay.classList.remove('active'); });
+      // Show thumbnails with delay
+      // Auto-hide scene name after showing
+      showSceneName(sc.name);
     }
 
     loadTex(sc.src, apply);
   }
 
+  /* ── Hotspots ── */
   function buildHotspots(sc) {
     hsLayer.innerHTML = ''; hsEls = [];
     (sc.hotspots || []).forEach(hs => {
       const el = document.createElement('div');
       el.className = 'hero-hotspot';
       el.style.pointerEvents = 'all';
+      const dirArrow = hs.to != null ? getDirectionArrow(hs.lon) : '';
       el.innerHTML = '<div class="hero-hotspot-ring"></div><div class="hero-hotspot-dot"></div>'
-        + (hs.label ? '<span class="hero-hotspot-label">' + hs.label + '</span>' : '');
+        + (hs.label ? '<span class="hero-hotspot-label">' + dirArrow + hs.label + '</span>' : '');
       el.addEventListener('click', () => { if(!didDrag && hs.to != null) loadScene(hs.to); });
       hsLayer.appendChild(el);
       hsEls.push({ el, hs });
     });
+  }
+
+  /* ── Generate direction arrow based on hotspot angle ── */
+  function getDirectionArrow(lon) {
+    // Normalize: 0 = forward, 90 = right, -90 = left, 180 = behind
+    const d = ((lon % 360) + 360) % 360;
+    if(d < 30 || d >= 330) return '';
+    if(d < 80) return '→ ';
+    if(d < 135) return '↗ ';
+    if(d < 225) return '← ';
+    if(d < 280) return '↖ ';
+    return '→ ';
   }
 
   function updateHotspots() {
@@ -720,6 +799,8 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
     if(dragging){ dragging = false; hero.style.cursor = 'grab'; }
     setTimeout(() => { didDrag = false; }, 10);
   });
+
+  /* ── Touch ── */
   hero.addEventListener('touchstart', e => {
     if(e.target.closest('.hero-hotspot')) return;
     startX = e.touches[0].clientX; startY = e.touches[0].clientY;
@@ -733,6 +814,35 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
     targetLat = Math.max(-85, Math.min(85, startLat + dy * 0.08));
   }, { passive: true });
 
+  /* ── Scroll to zoom ── */
+  let baseFov = HFOV;
+  hero.addEventListener('wheel', e => {
+    e.preventDefault();
+    baseFov = Math.max(35, Math.min(HFOV, baseFov + e.deltaY * 0.04));
+    camera.fov = 2 * Math.atan(Math.tan(baseFov * Math.PI / 360) / camera.aspect) * 180 / Math.PI;
+    camera.updateProjectionMatrix();
+    // Show zoom hint briefly
+    const zh = document.getElementById('heroZoomHint');
+    if(zh) { zh.classList.add('show'); clearTimeout(zh._t); zh._t = setTimeout(() => zh.classList.remove('show'), 1500); }
+  }, { passive: false });
+
+  /* ── Pinch zoom for touch ── */
+  let pinchDist = 0, pinchFov = HFOV;
+  hero.addEventListener('touchstart', e => {
+    if(e.touches.length === 2) {
+      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      pinchFov = baseFov;
+    }
+  }, { passive: true });
+  hero.addEventListener('touchmove', e => {
+    if(e.touches.length === 2) {
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      baseFov = Math.max(35, Math.min(HFOV, pinchFov - (d - pinchDist) * 0.15));
+      camera.fov = 2 * Math.atan(Math.tan(baseFov * Math.PI / 360) / camera.aspect) * 180 / Math.PI;
+      camera.updateProjectionMatrix();
+    }
+  }, { passive: true });
+
   /* ── Resize ── */
   window.addEventListener('resize', () => {
     camera.aspect = hero.offsetWidth / hero.offsetHeight;
@@ -740,7 +850,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
     renderer.setSize(hero.offsetWidth, hero.offsetHeight);
   });
 
-  /* ── Render loop ── */
+  /* ── Animation loop ── */
   function animate() {
     requestAnimationFrame(animate);
     lon += (targetLon - lon) * 0.07;
