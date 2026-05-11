@@ -619,19 +619,26 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   const texCache = {};
   function loadTex(src, cb) {
     if(texCache[src]) { cb(texCache[src]); return; }
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = img.naturalWidth; c.height = img.naturalHeight;
-      c.getContext('2d').drawImage(img, 0, 0);
-      const tex = new THREE.CanvasTexture(c);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      texCache[src] = tex;
-      cb(tex);
-    };
-    img.onerror = () => console.error('[360] 加载失败:', src);
-    img.src = src;
+    if(location.protocol === 'file:') {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth; c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        texCache[src] = tex; cb(tex);
+      };
+      img.onerror = () => console.error('[360] 加载失败:', src);
+      img.src = src;
+    } else {
+      new THREE.TextureLoader().load(src, tex => {
+        tex.colorSpace = THREE.SRGBColorSpace;
+        texCache[src] = tex; cb(tex);
+      }, undefined, () => console.error('[360] 加载失败:', src));
+    }
   }
+
 
   function loadScene(idx) {
     const sc = SCENES[idx];
