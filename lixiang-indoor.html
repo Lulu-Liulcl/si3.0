@@ -78,6 +78,11 @@ body.exit{opacity:0;transform:translateY(-8px);pointer-events:none}
 .hero-hotspot-label{position:absolute;top:calc(50% + 24px);left:50%;transform:translateX(-50%);font-size:11px;color:#fff;white-space:nowrap;background:rgba(0,0,0,.45);padding:3px 9px;border-radius:20px;letter-spacing:.05em;backdrop-filter:blur(4px)}
 .hero-hotspot:hover .hero-hotspot-ring{border-color:#fff;background:rgba(255,255,255,.12)}
 @keyframes hsPulse{0%{transform:translate(-50%,-50%) scale(.8);opacity:.9}70%{transform:translate(-50%,-50%) scale(1.6);opacity:0}100%{transform:translate(-50%,-50%) scale(1.6);opacity:0}}
+
+/* ── FLOOR ARROW HOTSPOT ── */
+.hero-arrow{position:absolute;cursor:pointer;z-index:5;pointer-events:all;perspective:500px}
+.hero-arrow-img{display:block;width:80px;height:auto;transform:rotateX(35deg);transform-origin:center bottom;opacity:0.4;pointer-events:none;filter:brightness(0) invert(1)}
+.hero-arrow:hover .hero-arrow-img{opacity:0.7}
 /* ── SCENE OVERLAY ── */
 .hero-scene-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .45s ease;z-index:6}
 .hero-scene-overlay.active{opacity:1;pointer-events:auto}
@@ -542,15 +547,15 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       name: '展厅总览',
       fov: 60, initLon: 270, initLat: 0, offset: 0,
       hotspots: [
-        { lon: -40, lat: 0, label: '家庭区', to: 1 }
+        { lon: -60, lat: -5, label: '家庭区', arrow: true, to: 1 }
       ]
     },
     {
-      src: '图片素材/全景家庭区2.jpeg',
+      src: '图片素材/全景家庭区3.jpeg',
       name: '家庭区 2',
-      fov: 60, initLon: 0, initLat: 0, offset: 0,
+      fov: 60, initLon: 270, initLat: 0, offset: 0,
       hotspots: [
-        { lon: 180, lat: 0, label: '返回展厅', to: 0 }
+        { lon: 270, lat: -25, label: '返回展厅', arrow: true, to: 0 }
       ]
     }
   ];
@@ -596,7 +601,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
   /* ── State ── */
   let lon = 0, lat = 5, targetLon = 0, targetLat = 5;
   let dragging = false, startX = 0, startY = 0, startLon = 0, startLat = 0, didDrag = false;
-  let activeSc = null, hsEls = [];
+  let activeSc = null, hsEls = [], currentIdx = 0;
 
   /* ── Texture cache ── */
   const texCache = {};
@@ -632,7 +637,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       tex.wrapS = THREE.RepeatWrapping;
       tex.offset.x = sc.offset || 0;
       mat.map = tex; mat.needsUpdate = true;
-      activeSc = sc;
+      activeSc = sc; currentIdx = idx;
       camera.fov = sc.fov || 75;
       camera.updateProjectionMatrix();
       targetLon = sc.initLon || 0;
@@ -648,10 +653,16 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
     hsLayer.innerHTML = ''; hsEls = [];
     (sc.hotspots || []).forEach(hs => {
       const el = document.createElement('div');
-      el.className = 'hero-hotspot';
       el.style.pointerEvents = 'all';
-      el.innerHTML = '<div class="hero-hotspot-ring"></div><div class="hero-hotspot-dot"></div>'
-        + (hs.label ? '<span class="hero-hotspot-label">' + hs.label + '</span>' : '');
+      if(hs.arrow) {
+        el.className = 'hero-arrow';
+        el.innerHTML = '<img class="hero-arrow-img" src="其他素材/箭头1.png" alt="">'
+          + (hs.label ? '<div style="text-align:center;font-size:9px;color:rgba(255,255,255,.5);margin-top:2px;transform:rotateX(40deg);transform-origin:top center;letter-spacing:.06em;white-space:nowrap;text-shadow:0 0 6px rgba(0,0,0,.6)">' + hs.label + '</div>' : '');
+      } else {
+        el.className = 'hero-hotspot';
+        el.innerHTML = '<div class="hero-hotspot-ring"></div><div class="hero-hotspot-dot"></div>'
+          + (hs.label ? '<span class="hero-hotspot-label">' + hs.label + '</span>' : '');
+      }
       el.addEventListener('click', () => { if(!didDrag && hs.to != null) loadScene(hs.to); });
       hsLayer.appendChild(el);
       hsEls.push({ el, hs });
