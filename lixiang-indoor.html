@@ -555,7 +555,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       name: '家庭区 2',
       fov: 60, initLon: 270, initLat: 0, offset: 0,
       hotspots: [
-        { lon: 270, lat: -25, label: '返回展厅', arrow: true, to: 0 }
+        { lon: 270, lat: -30, label: '返回展厅', arrow: true, to: 0 }
       ]
     }
   ];
@@ -626,7 +626,6 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
       }, undefined, () => console.error('[360] 加载失败:', src));
     }
   }
-
 
   function loadScene(idx) {
     const sc = SCENES[idx];
